@@ -8,8 +8,6 @@ require (
 	github.com/xanzy/go-gitlab v0.55.1
 )
 
-replace github.com/xanzy/go-gitlab => github.com/timonwong/go-gitlab v0.55.2-0.20220302023136-f53aa1af2147
-
 require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

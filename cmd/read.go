@@ -20,10 +20,12 @@ var readCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+
 		coverage, err := tool.Read(cmd.Context(), viper.GetString(constants.RootGitRef))
 		if err != nil {
 			return err
 		}
+
 		fmt.Printf("%.2f\n", coverage)
 		return nil
 	},
