@@ -30,14 +30,14 @@ var writeCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cover, err := covertool.New(
-			viper.GetString(constants.RootAPIBase), viper.GetString(constants.RootAPIToken), viper.GetString(constants.RootProjectID))
+			viper.GetString(constants.APIBase), viper.GetString(constants.APIToken), viper.GetString(constants.ProjectID))
 		if err != nil {
 			return err
 		}
 
 		coverage, _ := strconv.ParseFloat(args[0], 64)
 		return cover.Write(cmd.Context(),
-			viper.GetString(constants.RootGitRef), viper.GetString(constants.WriteGitSHA), coverage)
+			viper.GetString(constants.PipelineName), viper.GetString(constants.GitRef), viper.GetString(constants.WriteGitSHA), coverage)
 	},
 }
 

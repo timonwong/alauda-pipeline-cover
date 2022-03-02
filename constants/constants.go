@@ -3,10 +3,11 @@ package constants
 const (
 	// Root commands
 
-	RootAPIBase   = "api-base"
-	RootAPIToken  = "api-token"
-	RootProjectID = "project-id"
-	RootGitRef    = "git-ref"
+	APIBase      = "api-base"
+	APIToken     = "api-token"
+	ProjectID    = "project-id"
+	PipelineName = "pipeline-name"
+	GitRef       = "git-ref"
 
 	// Write commands
 

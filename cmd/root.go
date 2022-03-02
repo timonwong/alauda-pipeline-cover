@@ -40,8 +40,10 @@ func init() {
 		bindViper(name)
 	}
 
-	addStringFlag(constants.RootAPIBase, "https://gitlab.com/api/v4", "Base API URL for gitlab")
-	addStringFlag(constants.RootAPIToken, "", "GitLab API Token")
-	addStringFlag(constants.RootProjectID, "", "Gitlab Project ID")
-	addStringFlag(constants.RootGitRef, "", "The git ref name for target branch")
+	addStringFlag(constants.APIBase, "https://gitlab.com/api/v4", "Base API URL for gitlab")
+	addStringFlag(constants.APIToken, "", "GitLab API Token")
+	addStringFlag(constants.ProjectID, "", "Gitlab Project ID")
+	addStringFlag(constants.PipelineName, "default", "Pipeline name (default: default)")
+	addStringFlag(constants.GitRef, "", "The git ref name for target branch")
+	viper.SetDefault(constants.PipelineName, "default")
 }

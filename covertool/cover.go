@@ -10,10 +10,6 @@ import (
 	"github.com/xanzy/go-gitlab"
 )
 
-const (
-	PipelineName = "alauda-pipeline-cover"
-)
-
 type Tool struct {
 	projectID string
 	cli       *gitlab.Client
@@ -75,7 +71,7 @@ func (t *Tool) GetCommitStatuses(pid string, sha string, opt *gitlab.GetCommitSt
 	return cs, resp, err
 }
 
-func (t *Tool) Read(ctx context.Context, ref string) (coverage float64, error error) {
+func (t *Tool) Read(ctx context.Context, pipeline, ref string) (coverage float64, error error) {
 	sha, err := t.getLatestCommitFromRef(ctx, ref)
 	if err != nil {
 		return 0, fmt.Errorf("error get latest commit hash from %q: %w", ref, err)
@@ -83,7 +79,7 @@ func (t *Tool) Read(ctx context.Context, ref string) (coverage float64, error er
 
 	statusList, _, err := t.GetCommitStatuses(
 		t.projectID, sha, &gitlab.GetCommitStatusesOptions{
-			Name: gitlab.String(PipelineName),
+			Name: &pipeline,
 			All:  gitlab.Bool(true),
 		}, gitlab.WithContext(ctx))
 	if err != nil {
@@ -99,7 +95,7 @@ func (t *Tool) Read(ctx context.Context, ref string) (coverage float64, error er
 	return coverage, nil
 }
 
-func (t *Tool) Write(ctx context.Context, ref string, sha string, coverage float64) (err error) {
+func (t *Tool) Write(ctx context.Context, pipeline, ref, sha string, coverage float64) (err error) {
 	if sha == "" {
 		sha, err = t.getLatestCommitFromRef(ctx, ref)
 		if err != nil {
@@ -109,8 +105,8 @@ func (t *Tool) Write(ctx context.Context, ref string, sha string, coverage float
 	_, _, err = t.cli.Commits.SetCommitStatus(
 		t.projectID, sha, &gitlab.SetCommitStatusOptions{
 			State:    gitlab.Success,
-			Ref:      gitlab.String(ref),
-			Name:     gitlab.String("alauda-pipeline-cover"),
+			Ref:      &ref,
+			Name:     &pipeline,
 			Coverage: &coverage,
 		}, gitlab.WithContext(ctx))
 	if err != nil {

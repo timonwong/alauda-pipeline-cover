@@ -16,12 +16,12 @@ var readCmd = &cobra.Command{
 	Short: "Read coverage data",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		tool, err := covertool.New(
-			viper.GetString(constants.RootAPIBase), viper.GetString(constants.RootAPIToken), viper.GetString(constants.RootProjectID))
+			viper.GetString(constants.APIBase), viper.GetString(constants.APIToken), viper.GetString(constants.ProjectID))
 		if err != nil {
 			return err
 		}
 
-		coverage, err := tool.Read(cmd.Context(), viper.GetString(constants.RootGitRef))
+		coverage, err := tool.Read(cmd.Context(), viper.GetString(constants.PipelineName), viper.GetString(constants.GitRef))
 		if err != nil {
 			return err
 		}
