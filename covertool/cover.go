@@ -78,20 +78,19 @@ func (t *Tool) GetCommitStatuses(pid string, sha string, opt *gitlab.GetCommitSt
 func (t *Tool) Read(ctx context.Context, ref string) (coverage float64, error error) {
 	sha, err := t.getLatestCommitFromRef(ctx, ref)
 	if err != nil {
-		return coverage, err
+		return 0, fmt.Errorf("error get latest commit hash from %q: %w", ref, err)
 	}
 
-	statusList, _, err := t.GetCommitStatuses(t.projectID, sha, &gitlab.GetCommitStatusesOptions{
-		All: gitlab.Bool(true),
-	}, gitlab.WithContext(ctx))
+	statusList, _, err := t.GetCommitStatuses(
+		t.projectID, sha, &gitlab.GetCommitStatusesOptions{
+			Name: gitlab.String(PipelineName),
+			All:  gitlab.Bool(true),
+		}, gitlab.WithContext(ctx))
 	if err != nil {
-		return coverage, err
+		return 0, fmt.Errorf("error get commit status: %w", err)
 	}
 
 	for _, status := range statusList {
-		if status.Name != PipelineName {
-			continue
-		}
 		if status.Coverage > coverage {
 			coverage = status.Coverage
 		}
@@ -104,17 +103,18 @@ func (t *Tool) Write(ctx context.Context, ref string, sha string, coverage float
 	if sha == "" {
 		sha, err = t.getLatestCommitFromRef(ctx, ref)
 		if err != nil {
-			return err
+			return fmt.Errorf("error get latest commit hash from %q: %w", ref, err)
 		}
 	}
-	_, _, err = t.cli.Commits.SetCommitStatus(t.projectID, sha, &gitlab.SetCommitStatusOptions{
-		State:    gitlab.Success,
-		Ref:      gitlab.String(ref),
-		Name:     gitlab.String("alauda-pipeline-cover"),
-		Coverage: &coverage,
-	}, gitlab.WithContext(ctx))
+	_, _, err = t.cli.Commits.SetCommitStatus(
+		t.projectID, sha, &gitlab.SetCommitStatusOptions{
+			State:    gitlab.Success,
+			Ref:      gitlab.String(ref),
+			Name:     gitlab.String("alauda-pipeline-cover"),
+			Coverage: &coverage,
+		}, gitlab.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("error set commit status: %w", err)
 	}
 	return nil
 }
