@@ -104,7 +104,7 @@ func (t *Tool) Write(ctx context.Context, pipeline, ref, sha string, coverage fl
 	}
 	_, _, err = t.cli.Commits.SetCommitStatus(
 		t.projectID, sha, &gitlab.SetCommitStatusOptions{
-			State:    gitlab.Running,
+			State:    gitlab.Success,
 			Ref:      &ref,
 			Name:     &pipeline,
 			Coverage: &coverage,
