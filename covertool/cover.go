@@ -48,7 +48,7 @@ type CommitStatus struct {
 	FinishedAt   *time.Time    `json:"finished_at"`
 	Name         string        `json:"name"`
 	AllowFailure bool          `json:"allow_failure"`
-	Coverage     float64       `json:"coverage"`
+	Coverage     *float64      `json:"coverage"`
 	Author       gitlab.Author `json:"author"`
 	Description  string        `json:"description"`
 	TargetURL    string        `json:"target_url"`
@@ -87,8 +87,11 @@ func (t *Tool) Read(ctx context.Context, pipeline, ref string) (coverage float64
 	}
 
 	for _, status := range statusList {
-		if status.Coverage > coverage {
-			coverage = status.Coverage
+		if status.Coverage == nil {
+			continue
+		}
+		if *status.Coverage > coverage {
+			coverage = *status.Coverage
 		}
 	}
 
