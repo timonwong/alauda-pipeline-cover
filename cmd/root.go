@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
 	"github.com/timonwong/alauda-pipeline-cover/constants"
@@ -26,24 +27,43 @@ func Execute() {
 }
 
 func init() {
-	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	cobra.OnInitialize(func() {
+		viper.AutomaticEnv()
+		viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 
-	bindViper := func(name string) {
-		if err := viper.BindPFlag(name, rootCmd.PersistentFlags().Lookup(name)); err != nil {
-			log.Fatalf("failed to bind flag: %v", err)
+		postInitCommands(rootCmd.Commands())
+	})
+
+	rootCmd.PersistentFlags().String(constants.APIBase, "https://gitlab.com/api/v4", "Base API URL for gitlab")
+	rootCmd.PersistentFlags().String(constants.APIToken, "", "GitLab API Token")
+	rootCmd.PersistentFlags().String(constants.ProjectID, "", "Gitlab Project ID")
+	rootCmd.PersistentFlags().String(constants.PipelineName, "default", "Pipeline name (default: default)")
+	rootCmd.PersistentFlags().String(constants.GitRef, "", "The git ref name for target branch")
+	viper.SetDefault(constants.PipelineName, "default")
+	rootCmd.MarkPersistentFlagRequired(constants.ProjectID)
+	rootCmd.MarkPersistentFlagRequired(constants.PipelineName)
+	rootCmd.MarkPersistentFlagRequired(constants.GitRef)
+}
+
+func postInitCommands(commands []*cobra.Command) {
+	for _, cmd := range commands {
+		presetRequiredFlags(cmd)
+		if cmd.HasSubCommands() {
+			postInitCommands(cmd.Commands())
 		}
 	}
+}
 
-	addStringFlag := func(name, value, usage string) {
-		rootCmd.PersistentFlags().String(name, value, usage)
-		bindViper(name)
+func presetRequiredFlags(cmd *cobra.Command) {
+	if err := viper.BindPFlags(cmd.Flags()); err != nil {
+		log.Fatalf("failed to bind flag: %v", err)
 	}
 
-	addStringFlag(constants.APIBase, "https://gitlab.com/api/v4", "Base API URL for gitlab")
-	addStringFlag(constants.APIToken, "", "GitLab API Token")
-	addStringFlag(constants.ProjectID, "", "Gitlab Project ID")
-	addStringFlag(constants.PipelineName, "default", "Pipeline name (default: default)")
-	addStringFlag(constants.GitRef, "", "The git ref name for target branch")
-	viper.SetDefault(constants.PipelineName, "default")
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		if viper.IsSet(f.Name) && viper.GetString(f.Name) != "" {
+			if err := cmd.Flags().Set(f.Name, viper.GetString(f.Name)); err != nil {
+				log.Fatalf("failed to set flag: %v", err)
+			}
+		}
+	})
 }

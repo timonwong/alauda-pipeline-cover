@@ -98,15 +98,15 @@ func (t *Tool) Read(ctx context.Context, pipeline, ref string) (coverage float64
 	return coverage, nil
 }
 
-func (t *Tool) Write(ctx context.Context, pipeline, ref, sha string, coverage float64) (err error) {
-	if sha == "" {
-		sha, err = t.getLatestCommitFromRef(ctx, ref)
+func (t *Tool) Write(ctx context.Context, pipeline, ref, optionalSha string, coverage float64) (err error) {
+	if optionalSha == "" {
+		optionalSha, err = t.getLatestCommitFromRef(ctx, ref)
 		if err != nil {
 			return fmt.Errorf("error get latest commit hash from %q: %w", ref, err)
 		}
 	}
 	_, _, err = t.cli.Commits.SetCommitStatus(
-		t.projectID, sha, &gitlab.SetCommitStatusOptions{
+		t.projectID, optionalSha, &gitlab.SetCommitStatusOptions{
 			State:    gitlab.Success,
 			Ref:      &ref,
 			Name:     &pipeline,
