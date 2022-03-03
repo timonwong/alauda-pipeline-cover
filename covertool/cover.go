@@ -15,8 +15,8 @@ type Tool struct {
 	cli       *gitlab.Client
 }
 
-func New(baseUrl, token, projectID string) (*Tool, error) {
-	client, err := gitlab.NewClient(token, gitlab.WithBaseURL(baseUrl))
+func New(baseURL, token, projectID string) (*Tool, error) {
+	client, err := gitlab.NewClient(token, gitlab.WithBaseURL(baseURL))
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ type CommitStatus struct {
 	TargetURL    string        `json:"target_url"`
 }
 
-func (t *Tool) GetCommitStatuses(pid string, sha string, opt *gitlab.GetCommitStatusesOptions, options ...gitlab.RequestOptionFunc) ([]*CommitStatus, *gitlab.Response, error) {
+func (t *Tool) GetCommitStatuses(pid, sha string, opt *gitlab.GetCommitStatusesOptions, options ...gitlab.RequestOptionFunc) ([]*CommitStatus, *gitlab.Response, error) {
 	u := fmt.Sprintf("projects/%s/repository/commits/%s/statuses", gitlab.PathEscape(pid), url.PathEscape(sha))
 
 	req, err := t.cli.NewRequest(http.MethodGet, u, opt, options)
@@ -71,7 +71,7 @@ func (t *Tool) GetCommitStatuses(pid string, sha string, opt *gitlab.GetCommitSt
 	return cs, resp, err
 }
 
-func (t *Tool) Read(ctx context.Context, pipeline, ref string) (coverage float64, error error) {
+func (t *Tool) Read(ctx context.Context, pipeline, ref string) (coverage float64, err error) {
 	sha, err := t.getLatestCommitFromRef(ctx, ref)
 	if err != nil {
 		return 0, fmt.Errorf("error get latest commit hash from %q: %w", ref, err)

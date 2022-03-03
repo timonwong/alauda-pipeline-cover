@@ -40,9 +40,9 @@ func init() {
 	rootCmd.PersistentFlags().String(constants.PipelineName, "default", "Pipeline name (default: default)")
 	rootCmd.PersistentFlags().String(constants.GitRef, "", "The git ref name for target branch")
 	viper.SetDefault(constants.PipelineName, "default")
-	rootCmd.MarkPersistentFlagRequired(constants.ProjectID)
-	rootCmd.MarkPersistentFlagRequired(constants.PipelineName)
-	rootCmd.MarkPersistentFlagRequired(constants.GitRef)
+	rootCmd.MarkPersistentFlagRequired(constants.ProjectID)    // nolint: errcheck
+	rootCmd.MarkPersistentFlagRequired(constants.PipelineName) // nolint: errcheck
+	rootCmd.MarkPersistentFlagRequired(constants.GitRef)       // nolint: errcheck
 }
 
 func postInitCommands(commands []*cobra.Command) {
