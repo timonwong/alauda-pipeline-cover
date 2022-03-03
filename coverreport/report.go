@@ -40,8 +40,6 @@ const (
 type Configuration struct {
 	Root       string   `yaml:"root"`
 	Exclusions []string `yaml:"exclusions"`
-	Threshold  float64  `yaml:"threshold,omitempty"`
-	Metric     string   `yaml:"threshold_type,omitempty"`
 	SortBy     SortBy   `yaml:"sort_by,omitempty"`
 	Order      Order    `yaml:"order,omitempty"`
 }

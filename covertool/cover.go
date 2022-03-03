@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/xanzy/go-gitlab"
+	"gopkg.in/guregu/null.v4"
 )
 
 type Tool struct {
@@ -48,7 +49,7 @@ type CommitStatus struct {
 	FinishedAt   *time.Time    `json:"finished_at"`
 	Name         string        `json:"name"`
 	AllowFailure bool          `json:"allow_failure"`
-	Coverage     *float64      `json:"coverage"`
+	Coverage     null.Float    `json:"coverage"`
 	Author       gitlab.Author `json:"author"`
 	Description  string        `json:"description"`
 	TargetURL    string        `json:"target_url"`
@@ -71,10 +72,10 @@ func (t *Tool) GetCommitStatuses(pid, sha string, opt *gitlab.GetCommitStatusesO
 	return cs, resp, err
 }
 
-func (t *Tool) Read(ctx context.Context, pipeline, ref string) (coverage float64, err error) {
+func (t *Tool) Read(ctx context.Context, pipeline, ref string) (coverage null.Float, err error) {
 	sha, err := t.getLatestCommitFromRef(ctx, ref)
 	if err != nil {
-		return 0, fmt.Errorf("error get latest commit hash from %q: %w", ref, err)
+		return coverage, fmt.Errorf("error get latest commit hash from %q: %w", ref, err)
 	}
 
 	statusList, _, err := t.GetCommitStatuses(
@@ -83,15 +84,15 @@ func (t *Tool) Read(ctx context.Context, pipeline, ref string) (coverage float64
 			All:  gitlab.Bool(true),
 		}, gitlab.WithContext(ctx))
 	if err != nil {
-		return 0, fmt.Errorf("error get commit status: %w", err)
+		return coverage, fmt.Errorf("error get commit status: %w", err)
 	}
 
 	for _, status := range statusList {
-		if status.Coverage == nil {
+		if !status.Coverage.Valid {
 			continue
 		}
-		if *status.Coverage > coverage {
-			coverage = *status.Coverage
+		if !coverage.Valid || status.Coverage.Float64 > coverage.Float64 {
+			coverage = status.Coverage
 		}
 	}
 
