@@ -37,9 +37,10 @@ func init() {
 	rootCmd.PersistentFlags().String(constants.APIBase, "https://gitlab.com/api/v4", "Base API URL for gitlab")
 	rootCmd.PersistentFlags().String(constants.APIToken, "", "GitLab API Token")
 	rootCmd.PersistentFlags().String(constants.ProjectID, "", "Gitlab Project ID")
-	rootCmd.PersistentFlags().String(constants.PipelineName, "default", "Pipeline name (default: default)")
+	rootCmd.PersistentFlags().String(constants.PipelineName, "alauda-pipeline-cover", "Pipeline name (default: alauda-pipeline-cover)")
 	rootCmd.PersistentFlags().String(constants.GitRef, "", "The git ref name for target branch")
-	viper.SetDefault(constants.PipelineName, "default")
+	viper.SetDefault(constants.APIBase, "https://gitlab.com/api/v4")
+	viper.SetDefault(constants.PipelineName, "alauda-pipeline-cover")
 	rootCmd.MarkPersistentFlagRequired(constants.ProjectID)    // nolint: errcheck
 	rootCmd.MarkPersistentFlagRequired(constants.PipelineName) // nolint: errcheck
 	rootCmd.MarkPersistentFlagRequired(constants.GitRef)       // nolint: errcheck

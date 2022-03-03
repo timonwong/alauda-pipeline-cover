@@ -26,7 +26,7 @@ var readCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf("%.2f\n", coverage)
+		fmt.Printf("%.2f\n", coverage.ValueOrZero())
 		return nil
 	},
 }

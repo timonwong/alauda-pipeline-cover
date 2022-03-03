@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"log"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -30,15 +29,12 @@ var writeCmd = &cobra.Command{
 		}
 
 		return cover.Write(cmd.Context(),
-			viper.GetString(constants.PipelineName), viper.GetString(constants.GitRef), viper.GetString(constants.WriteGitSHA), coverage)
+			viper.GetString(constants.PipelineName), viper.GetString(constants.GitRef), viper.GetString(constants.GitSHA), coverage)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(writeCmd)
 
-	writeCmd.Flags().String(constants.WriteGitSHA, "", "Optional git SHA hash for target ref")
-	if err := viper.BindPFlag(constants.WriteGitSHA, writeCmd.Flags().Lookup(constants.WriteGitSHA)); err != nil {
-		log.Fatalf("failed to bind flag: %v", err)
-	}
+	writeCmd.Flags().String(constants.GitSHA, "", "Optional git SHA hash for target ref")
 }

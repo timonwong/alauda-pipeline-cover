@@ -9,7 +9,12 @@ const (
 	PipelineName = "pipeline-name"
 	GitRef       = "git-ref"
 
+	// Compare commands
+
+	CoverProfile     = "coverprofile"
+	DefaultThreshold = "default-threshold"
+
 	// Write commands
 
-	WriteGitSHA = "git-sha"
+	GitSHA = "git-sha"
 )
