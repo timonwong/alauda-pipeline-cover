@@ -34,12 +34,10 @@ func init() {
 		postInitCommands(rootCmd.Commands())
 	})
 
-	rootCmd.PersistentFlags().String(constants.APIBase, "https://gitlab.com/api/v4", "Base API URL for gitlab")
-	rootCmd.PersistentFlags().String(constants.APIToken, "", "GitLab API Token")
-	rootCmd.PersistentFlags().String(constants.ProjectID, "", "Gitlab Project ID")
-	rootCmd.PersistentFlags().String(constants.PipelineName, "alauda-pipeline-cover", "Pipeline name (default: alauda-pipeline-cover)")
-	viper.SetDefault(constants.APIBase, "https://gitlab.com/api/v4")
-	viper.SetDefault(constants.PipelineName, "alauda-pipeline-cover")
+	addGlobalStringFlag(constants.APIBase, "https://gitlab.com/api/v4", "Base API URL for gitlab")
+	addGlobalStringFlag(constants.APIToken, "", "GitLab API Token")
+	addGlobalStringFlag(constants.ProjectID, "", "Gitlab Project ID")
+	addGlobalStringFlag(constants.PipelineName, "alauda-pipeline-cover", "Pipeline name (default: alauda-pipeline-cover)")
 	rootCmd.MarkPersistentFlagRequired(constants.ProjectID)    // nolint: errcheck
 	rootCmd.MarkPersistentFlagRequired(constants.PipelineName) // nolint: errcheck
 }
@@ -54,15 +52,31 @@ func postInitCommands(commands []*cobra.Command) {
 }
 
 func presetRequiredFlags(cmd *cobra.Command) {
-	if err := viper.BindPFlags(cmd.Flags()); err != nil {
-		log.Fatalf("failed to bind flag: %v", err)
-	}
-
-	cmd.Flags().VisitAll(func(f *pflag.Flag) {
-		if viper.IsSet(f.Name) && viper.GetString(f.Name) != "" {
-			if err := cmd.Flags().Set(f.Name, viper.GetString(f.Name)); err != nil {
+	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
+		requiredAnnotation, found := flag.Annotations[cobra.BashCompOneRequiredFlag]
+		if !found || requiredAnnotation[0] != "true" {
+			return
+		}
+		if viper.IsSet(flag.Name) && viper.GetString(flag.Name) != "" {
+			if err := cmd.Flags().Set(flag.Name, viper.GetString(flag.Name)); err != nil {
 				log.Fatalf("failed to set flag: %v", err)
 			}
 		}
 	})
+}
+
+func addGlobalStringFlag(name, value, usage string) {
+	rootCmd.PersistentFlags().String(name, value, usage)
+	if err := viper.BindPFlag(name, rootCmd.PersistentFlags().Lookup(name)); err != nil {
+		log.Fatalf("failed to bind flag: %v", err)
+	}
+	if value != "" {
+		viper.SetDefault(name, value)
+	}
+}
+
+func prerunBindViperFlags(cmd *cobra.Command, args []string) {
+	if err := viper.BindPFlags(cmd.NonInheritedFlags()); err != nil {
+		log.Fatalf("failed to bind flags: %v", err)
+	}
 }

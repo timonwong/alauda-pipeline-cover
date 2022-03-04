@@ -12,8 +12,9 @@ import (
 
 // readCmd represents the read command
 var readCmd = &cobra.Command{
-	Use:   "read",
-	Short: "Read coverage data",
+	Use:    "read",
+	Short:  "Read coverage data",
+	PreRun: prerunBindViperFlags,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		tool, err := covertool.New(
 			viper.GetString(constants.APIBase), viper.GetString(constants.APIToken), viper.GetString(constants.ProjectID))

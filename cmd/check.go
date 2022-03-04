@@ -16,7 +16,9 @@ import (
 
 // checkCmd represents the check command
 var checkCmd = &cobra.Command{
-	Use: "check",
+	Use:    "check",
+	Short:  "check coverage data",
+	PreRun: prerunBindViperFlags,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		apiToken := viper.GetString(constants.APIToken)
 		gitRef := viper.GetString(constants.GitRef)
@@ -43,7 +45,7 @@ var checkCmd = &cobra.Command{
 			Order:  coverreport.OrderDesc,
 		}, packages)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to read coverage: %w", err)
 		}
 
 		// Print coverage table

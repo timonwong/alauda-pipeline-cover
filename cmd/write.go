@@ -14,9 +14,10 @@ import (
 
 // writeCmd represents the write command
 var writeCmd = &cobra.Command{
-	Use:   "write coverage",
-	Short: "Write coverage data",
-	Args:  cobra.ExactArgs(1),
+	Use:    "write coverage",
+	Short:  "Write coverage data",
+	PreRun: prerunBindViperFlags,
+	Args:   cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cover, err := covertool.New(
 			viper.GetString(constants.APIBase), viper.GetString(constants.APIToken), viper.GetString(constants.ProjectID))
