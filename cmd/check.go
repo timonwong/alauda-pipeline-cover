@@ -61,7 +61,7 @@ var checkCmd = &cobra.Command{
 		}
 
 		if report.Total.StmtCoverage < threshold {
-			log.Fatalf("ERROR: Your coverage is below %.2f%%\n!", threshold)
+			log.Fatalf("ERROR: Your coverage is below %.2f%%!", threshold)
 		}
 
 		return nil
