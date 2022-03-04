@@ -12,9 +12,9 @@ import (
 	"github.com/timonwong/alauda-pipeline-cover/covertool"
 )
 
-// compareCmd represents the compare command
-var compareCmd = &cobra.Command{
-	Use: "compare",
+// checkCmd represents the check command
+var checkCmd = &cobra.Command{
+	Use: "check",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		tool, err := covertool.New(
 			viper.GetString(constants.APIBase), viper.GetString(constants.APIToken), viper.GetString(constants.ProjectID))
@@ -56,9 +56,9 @@ var compareCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(compareCmd)
+	rootCmd.AddCommand(checkCmd)
 
-	compareCmd.Flags().String(constants.CoverProfile, "coverage.out", "Coverage output file (default coverage.out)")
-	compareCmd.Flags().Float64(constants.DefaultThreshold, 0, "The default coverage threshold")
-	compareCmd.MarkFlagRequired(constants.CoverProfile) // nolint: errcheck
+	checkCmd.Flags().String(constants.CoverProfile, "coverage.out", "Coverage output file (default coverage.out)")
+	checkCmd.Flags().Float64(constants.DefaultThreshold, 0, "The default coverage threshold")
+	checkCmd.MarkFlagRequired(constants.CoverProfile) // nolint: errcheck
 }
