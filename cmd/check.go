@@ -52,10 +52,13 @@ var checkCmd = &cobra.Command{
 
 		// Print coverage table
 		coverreport.PrintTable(report, os.Stdout, packages)
+		// Force flush
+		os.Stdout.WriteString("\n")
+		os.Stdout.Sync()
 
 		// Check threshold
 		threshold := viper.GetFloat64(constants.DefaultThreshold)
-		log.Printf("Choose larger coverage between %.2f(default) and %.2f", threshold, coverage.ValueOrZero())
+		log.Printf("Choose larger coverage between %.2f (default) and %.2f", threshold, coverage.ValueOrZero())
 		if coverage.Valid && coverage.Float64 > threshold {
 			threshold = coverage.Float64
 		}
