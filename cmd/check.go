@@ -36,6 +36,8 @@ var checkCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("unable to read coverage from project: %w", err)
 			}
+
+			log.Printf("Successfully load coverage coverage %.2f from project", coverage.ValueOrZero())
 		}
 
 		// Generate coverage report
@@ -53,6 +55,7 @@ var checkCmd = &cobra.Command{
 
 		// Check threshold
 		threshold := viper.GetFloat64(constants.DefaultThreshold)
+		log.Printf("Choose larger coverage between %.2f(default) and %.2f", threshold, coverage.ValueOrZero())
 		if coverage.Valid && coverage.Float64 > threshold {
 			threshold = coverage.Float64
 		}
