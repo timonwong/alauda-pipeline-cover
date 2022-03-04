@@ -1,7 +1,6 @@
 package coverreport
 
 import (
-	"errors"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -11,43 +10,32 @@ import (
 	"golang.org/x/tools/cover"
 )
 
-var (
-	DefaultConfiguration = Configuration{
-		SortBy: SortByFilename,
-		Order:  OrderAsc,
-	}
+const (
+	OrderAsc  = "asc"
+	OrderDesc = "desc"
 )
 
-type Order string
-
 const (
-	OrderAsc  Order = "asc"
-	OrderDesc Order = "desc"
-)
-
-type SortBy string
-
-const (
-	SortByFilename      SortBy = "filename"
-	SortByPackage       SortBy = "package"
-	SortByBlock         SortBy = "block"
-	SortByStmt          SortBy = "stmt"
-	SortByMissingBlocks SortBy = "missing-blocks"
-	SortByMissingStmts  SortBy = "missing-stmts"
+	SortByFilename      = "filename"
+	SortByPackage       = "package"
+	SortByBlock         = "block"
+	SortByStmt          = "stmt"
+	SortByMissingBlocks = "missing-blocks"
+	SortByMissingStmts  = "missing-stmts"
 )
 
 // Configuration structure
 type Configuration struct {
-	Root       string   `yaml:"root"`
-	Exclusions []string `yaml:"exclusions"`
-	SortBy     SortBy   `yaml:"sort_by,omitempty"`
-	Order      Order    `yaml:"order,omitempty"`
+	Root       string
+	Exclusions []string
+	SortBy     string
+	Order      string
 }
 
 // Summary is coverage summary for a file or module
 type Summary struct {
 	Name                                       string
-	Blocks, Stmts, MissingBlocks, MissingStmts int
+	Blocks, Stmts, MissingBlocks, MissingStmts int64
 	BlockCoverage, StmtCoverage                float64
 }
 
@@ -110,7 +98,7 @@ func isExcluded(fileName string, exclusions []string) bool {
 }
 
 // Creates a Report struct from the coverage summarization results
-func makeReport(total *accumulator, files map[string]*accumulator, sortBy SortBy, order Order) (*Report, error) {
+func makeReport(total *accumulator, files map[string]*accumulator, sortBy, order string) (*Report, error) {
 	fileReports := make([]Summary, 0, len(files))
 	for _, fileCover := range files {
 		fileReports = append(fileReports, fileCover.results())
@@ -127,16 +115,16 @@ func makeReport(total *accumulator, files map[string]*accumulator, sortBy SortBy
 // Accumulates the coverage of a file and returns a summary
 type accumulator struct {
 	name                                       string
-	blocks, stmts, coveredBlocks, coveredStmts int
+	blocks, stmts, coveredBlocks, coveredStmts int64
 }
 
 // Accumulates a profile block
 func (a *accumulator) add(block cover.ProfileBlock) {
 	a.blocks++
-	a.stmts += block.NumStmt
+	a.stmts += int64(block.NumStmt)
 	if block.Count > 0 {
 		a.coveredBlocks++
-		a.coveredStmts += block.NumStmt
+		a.coveredStmts += int64(block.NumStmt)
 	}
 }
 
@@ -154,15 +142,15 @@ func (a *accumulator) results() Summary {
 		Stmts:         a.stmts,
 		MissingBlocks: a.blocks - a.coveredBlocks,
 		MissingStmts:  a.stmts - a.coveredStmts,
-		BlockCoverage: 100.0 * float64(a.coveredBlocks) / float64(a.blocks),
-		StmtCoverage:  100.0 * float64(a.coveredStmts) / float64(a.stmts),
+		BlockCoverage: float64(a.coveredBlocks) / float64(a.blocks) * 100,
+		StmtCoverage:  float64(a.coveredStmts) / float64(a.stmts) * 100,
 	}
 }
 
 // Sorts the individual coverage reports by a given column
 // (block --block coverage--, stmt --stmt coverage--, missing-blocks or missing-stmts)
 // and a sorting direction (asc or desc)
-func sortResults(reports []Summary, sortBy SortBy, order Order) error {
+func sortResults(reports []Summary, sortBy, order string) error {
 	var reverse bool
 	var cmp func(i, j int) bool
 
@@ -172,7 +160,7 @@ func sortResults(reports []Summary, sortBy SortBy, order Order) error {
 	case OrderDesc:
 		reverse = true
 	default:
-		return errors.New("order must be either asc or desc")
+		return fmt.Errorf("order must be either asc or desc, got %q", order)
 	}
 	switch sortBy {
 	case SortByFilename, SortByPackage:
@@ -196,7 +184,7 @@ func sortResults(reports []Summary, sortBy SortBy, order Order) error {
 			return reports[i].MissingStmts < reports[j].MissingStmts
 		}
 	default:
-		return errors.New("invalid sort colum, must be one of filename, package, block, stmt, missing-blocks or missing-stmts")
+		return fmt.Errorf("invalid sort colum, must be one of filename, package, block, stmt, missing-blocks or missing-stmts, got %q", sortBy)
 	}
 	sort.Slice(reports, func(i, j int) bool {
 		if reverse {

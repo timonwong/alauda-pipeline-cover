@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	"github.com/timonwong/alauda-pipeline-cover/testdata"
 )
 
@@ -62,8 +63,8 @@ func TestReport(t *testing.T) {
 	assert.NoError(err)
 	assert.InDelta(81.4, report.Total.BlockCoverage, 0.1)
 	assert.InDelta(81.9, report.Total.StmtCoverage, 0.1)
-	assert.Equal(111, report.Total.Stmts)
-	assert.Equal(81, report.Total.Blocks)
+	assert.EqualValues(111, report.Total.Stmts)
+	assert.EqualValues(81, report.Total.Blocks)
 }
 
 func TestInvalidCoverProfile(t *testing.T) {
