@@ -7,7 +7,10 @@ const (
 	APIToken     = "api-token"
 	ProjectID    = "project-id"
 	PipelineName = "pipeline-name"
-	GitRef       = "git-ref"
+
+	// Common commands
+
+	GitRef = "git-ref"
 
 	// Compare commands
 

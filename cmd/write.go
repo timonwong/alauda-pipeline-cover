@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -20,7 +21,7 @@ var writeCmd = &cobra.Command{
 		cover, err := covertool.New(
 			viper.GetString(constants.APIBase), viper.GetString(constants.APIToken), viper.GetString(constants.ProjectID))
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to initialize covertool: %w", err)
 		}
 
 		coverage, err := strconv.ParseFloat(args[0], 64)
@@ -36,5 +37,7 @@ var writeCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(writeCmd)
 
+	writeCmd.Flags().String(constants.GitRef, "", "The git ref name for target branch")
 	writeCmd.Flags().String(constants.GitSHA, "", "Optional git SHA hash for target ref")
+	writeCmd.MarkFlagRequired(constants.GitRef) // nolint: errcheck
 }

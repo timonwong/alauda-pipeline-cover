@@ -18,7 +18,7 @@ var readCmd = &cobra.Command{
 		tool, err := covertool.New(
 			viper.GetString(constants.APIBase), viper.GetString(constants.APIToken), viper.GetString(constants.ProjectID))
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to initialize covertool: %w", err)
 		}
 
 		coverage, err := tool.Read(cmd.Context(), viper.GetString(constants.PipelineName), viper.GetString(constants.GitRef))
@@ -33,4 +33,7 @@ var readCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(readCmd)
+
+	readCmd.Flags().String(constants.GitRef, "", "The git ref name for target branch")
+	readCmd.MarkFlagRequired(constants.GitRef) // nolint: errcheck
 }
