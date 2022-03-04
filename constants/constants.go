@@ -16,6 +16,7 @@ const (
 
 	CoverProfile     = "coverprofile"
 	DefaultThreshold = "default-threshold"
+	Leeway           = "leeway"
 
 	// Write commands
 

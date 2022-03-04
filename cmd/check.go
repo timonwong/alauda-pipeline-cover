@@ -63,8 +63,9 @@ var checkCmd = &cobra.Command{
 			threshold = coverage.Float64
 		}
 
-		if report.Total.StmtCoverage < threshold {
-			log.Fatalf("ERROR: Your coverage is below %.2f%%!", threshold)
+		leeway := viper.GetFloat64(constants.Leeway)
+		if report.Total.StmtCoverage < threshold-leeway {
+			log.Fatalf("ERROR: Your coverage is below %.2f%% (leway=%.2f%%)!", threshold, leeway)
 		}
 
 		return nil
@@ -77,5 +78,6 @@ func init() {
 	checkCmd.Flags().String(constants.GitRef, "", "The git ref name for target branch")
 	checkCmd.Flags().String(constants.CoverProfile, "coverage.out", "Coverage output file (default coverage.out)")
 	checkCmd.Flags().Float64(constants.DefaultThreshold, 0, "The default coverage threshold")
+	checkCmd.Flags().Float64(constants.Leeway, 0, "Allow coverage to drop by leeway")
 	checkCmd.MarkFlagRequired(constants.CoverProfile) // nolint: errcheck
 }
