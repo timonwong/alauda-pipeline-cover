@@ -59,15 +59,15 @@ func GenerateReport(coverprofile string, conf *Configuration, packages bool) (*R
 	total := &accumulator{name: "Total"}
 	files := make(map[string]*accumulator)
 	for _, profile := range profiles {
-		fileName := normalizeName(profile.FileName, conf.Root, packages)
-		if isExcluded(fileName, conf.Exclusions) {
+		if isExcluded(profile.FileName, conf.Exclusions) {
 			continue
 		}
-		fileCover, ok := files[fileName]
+		filename := normalizeName(profile.FileName, conf.Root, packages)
+		fileCover, ok := files[filename]
 		if !ok {
 			// Create new accumulator
-			fileCover = &accumulator{name: fileName}
-			files[fileName] = fileCover
+			fileCover = &accumulator{name: filename}
+			files[filename] = fileCover
 		}
 		total.addAll(profile.Blocks)
 		fileCover.addAll(profile.Blocks)
@@ -90,9 +90,9 @@ func normalizeName(filename, root string, packages bool) string {
 	return strings.TrimPrefix(filename, root)
 }
 
-func isExcluded(fileName string, exclusions []string) bool {
+func isExcluded(filename string, exclusions []string) bool {
 	for _, exclusion := range exclusions {
-		if ok, _ := zglob.Match(exclusion, fileName); ok {
+		if ok, _ := zglob.Match(exclusion, filename); ok {
 			return true
 		}
 	}
