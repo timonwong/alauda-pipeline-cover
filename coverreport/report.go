@@ -22,6 +22,8 @@ const (
 	SortByStmt          = "stmt"
 	SortByMissingBlocks = "missing-blocks"
 	SortByMissingStmts  = "missing-stmts"
+	SortByBlockCoverage = "block-coverage"
+	SortByStmtCoverage  = "stmt-coverage"
 )
 
 // Configuration structure
@@ -49,7 +51,7 @@ type Report struct {
 // exclusions: packages to be excluded (if a package is excluded, all its subpackages are excluded as well)
 // sortBy: the order in which the files will be sorted in the report (see sortResults)
 // order: the direction of the the sorting
-func GenerateReport(coverprofile string, configuration *Configuration, packages bool) (*Report, error) {
+func GenerateReport(coverprofile string, conf *Configuration, packages bool) (*Report, error) {
 	profiles, err := cover.ParseProfiles(coverprofile)
 	if err != nil {
 		return nil, fmt.Errorf("invalid coverprofile: %w", err)
@@ -57,8 +59,8 @@ func GenerateReport(coverprofile string, configuration *Configuration, packages 
 	total := &accumulator{name: "Total"}
 	files := make(map[string]*accumulator)
 	for _, profile := range profiles {
-		fileName := normalizeName(profile.FileName, configuration.Root, packages)
-		if isExcluded(fileName, configuration.Exclusions) {
+		fileName := normalizeName(profile.FileName, conf.Root, packages)
+		if isExcluded(fileName, conf.Exclusions) {
 			continue
 		}
 		fileCover, ok := files[fileName]
@@ -70,22 +72,22 @@ func GenerateReport(coverprofile string, configuration *Configuration, packages 
 		total.addAll(profile.Blocks)
 		fileCover.addAll(profile.Blocks)
 	}
-	return makeReport(total, files, configuration.SortBy, configuration.Order)
+	return makeReport(total, files, conf.SortBy, conf.Order)
 }
 
 // Removes root dir part if configured to do so
-func normalizeName(fileName, root string, packages bool) string {
+func normalizeName(filename, root string, packages bool) string {
 	if packages {
-		fileName = filepath.Dir(fileName)
+		filename = filepath.Dir(filename)
 	}
 
 	if root == "" {
-		return fileName
+		return filename
 	}
 	if packages {
-		return "." + strings.ReplaceAll(fileName, root, "")
+		return "." + strings.TrimPrefix(filename, root)
 	}
-	return strings.ReplaceAll(fileName, root, "")
+	return strings.TrimPrefix(filename, root)
 }
 
 func isExcluded(fileName string, exclusions []string) bool {
@@ -183,10 +185,18 @@ func sortResults(reports []Summary, sortBy, order string) error {
 		cmp = func(i, j int) bool {
 			return reports[i].MissingStmts < reports[j].MissingStmts
 		}
+	case SortByBlockCoverage:
+		cmp = func(i, j int) bool {
+			return reports[i].BlockCoverage < reports[j].BlockCoverage
+		}
+	case SortByStmtCoverage:
+		cmp = func(i, j int) bool {
+			return reports[i].StmtCoverage < reports[j].StmtCoverage
+		}
 	default:
-		return fmt.Errorf("invalid sort colum, must be one of filename, package, block, stmt, missing-blocks or missing-stmts, got %q", sortBy)
+		return fmt.Errorf("invalid sort column %q", sortBy)
 	}
-	sort.Slice(reports, func(i, j int) bool {
+	sort.SliceStable(reports, func(i, j int) bool {
 		if reverse {
 			return !cmp(i, j)
 		}
